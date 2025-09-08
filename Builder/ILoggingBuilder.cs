@@ -1,4 +1,7 @@
 using Framework.Core.Logging.Options;
+using Framework.Core.Logging.Instrumentation;
+using Framework.Core.Logging.Logging.AsyncLogging;
+using Framework.Core.Logging.Middleware;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -148,5 +151,83 @@ namespace Framework.Core.Logging.Builder
         /// Configure all options using a delegate
         /// </summary>
         IFrameworkLoggingBuilder Configure(Action<LoggingOptions> configure);
+
+        // Global Exception Handling Configuration
+
+        /// <summary>
+        /// Enable global exception handling middleware
+        /// </summary>
+        IFrameworkLoggingBuilder EnableGlobalExceptionHandling(bool enabled = true);
+
+        /// <summary>
+        /// Configure global exception handling options using a delegate
+        /// </summary>
+        IFrameworkLoggingBuilder ConfigureGlobalExceptionHandling(Action<GlobalExceptionOptions> configure);
+
+        // Async Logging Configuration
+
+        /// <summary>
+        /// Enable asynchronous logging with background processing
+        /// </summary>
+        IFrameworkLoggingBuilder EnableAsyncLogging(bool enabled = true);
+
+        /// <summary>
+        /// Configure async logging options using a delegate
+        /// </summary>
+        IFrameworkLoggingBuilder ConfigureAsyncLogging(Action<AsyncLoggingOptions> configure);
+
+        // Auto-Instrumentation Configuration
+
+        /// <summary>
+        /// Enable automatic instrumentation for all supported components
+        /// </summary>
+        IFrameworkLoggingBuilder EnableAutoInstrumentation(bool enabled = true);
+
+        /// <summary>
+        /// Configure auto-instrumentation options using a delegate
+        /// </summary>
+        IFrameworkLoggingBuilder ConfigureAutoInstrumentation(Action<AutoInstrumentationOptions> configure);
+
+        /// <summary>
+        /// Enable database operations instrumentation
+        /// </summary>
+        IFrameworkLoggingBuilder EnableDatabaseInstrumentation(bool enabled = true);
+
+        /// <summary>
+        /// Configure database instrumentation options using a delegate
+        /// </summary>
+        IFrameworkLoggingBuilder ConfigureDatabaseInstrumentation(Action<DatabaseInstrumentationOptions> configure);
+
+        /// <summary>
+        /// Enable Redis operations instrumentation
+        /// </summary>
+        IFrameworkLoggingBuilder EnableRedisInstrumentation(bool enabled = true);
+
+        /// <summary>
+        /// Configure Redis instrumentation options using a delegate
+        /// </summary>
+        IFrameworkLoggingBuilder ConfigureRedisInstrumentation(Action<RedisInstrumentationOptions> configure);
+
+        /// <summary>
+        /// Enable background service operations instrumentation
+        /// </summary>
+        IFrameworkLoggingBuilder EnableBackgroundServiceInstrumentation(bool enabled = true);
+
+        /// <summary>
+        /// Configure background service instrumentation options using a delegate
+        /// </summary>
+        IFrameworkLoggingBuilder ConfigureBackgroundServiceInstrumentation(Action<BackgroundServiceInstrumentationOptions> configure);
+
+        // Performance & Security Configuration
+
+        /// <summary>
+        /// Enable memory optimization features (object pooling, batch processing)
+        /// </summary>
+        IFrameworkLoggingBuilder OptimizeMemoryUsage(bool enabled = true);
+
+        /// <summary>
+        /// Enable enhanced security features (advanced data masking, secure defaults)
+        /// </summary>
+        IFrameworkLoggingBuilder EnableSecurityFeatures(bool enabled = true);
     }
 }

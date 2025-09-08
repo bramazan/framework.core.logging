@@ -1,4 +1,7 @@
 using Framework.Core.Logging.Options;
+using Framework.Core.Logging.Instrumentation;
+using Framework.Core.Logging.Logging.AsyncLogging;
+using Framework.Core.Logging.Middleware;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -193,6 +196,155 @@ namespace Framework.Core.Logging.Builder
         public IFrameworkLoggingBuilder Configure(Action<LoggingOptions> configure)
         {
             configure?.Invoke(Options);
+            return this;
+        }
+
+        // Global Exception Handling Configuration
+
+        public IFrameworkLoggingBuilder EnableGlobalExceptionHandling(bool enabled = true)
+        {
+            if (enabled)
+            {
+                Services.Configure<GlobalExceptionOptions>(opt =>
+                {
+                    opt.ModifyResponse = false;
+                    opt.IncludeStackTrace = false;
+                    opt.LogRequestBody = true;
+                    opt.EnableMetrics = true;
+                });
+            }
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder ConfigureGlobalExceptionHandling(Action<GlobalExceptionOptions> configure)
+        {
+            Services.Configure<GlobalExceptionOptions>(configure);
+            return this;
+        }
+
+        // Async Logging Configuration
+
+        public IFrameworkLoggingBuilder EnableAsyncLogging(bool enabled = true)
+        {
+            if (enabled)
+            {
+                Services.Configure<AsyncLoggingOptions>(opt =>
+                {
+                    opt.QueueCapacity = 10000;
+                    opt.BatchSize = 50;
+                    opt.FlushInterval = TimeSpan.FromMilliseconds(100);
+                    opt.EnableObjectPooling = true;
+                    opt.MaxConcurrentWrites = Environment.ProcessorCount;
+                });
+            }
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder ConfigureAsyncLogging(Action<AsyncLoggingOptions> configure)
+        {
+            Services.Configure<AsyncLoggingOptions>(configure);
+            return this;
+        }
+
+        // Auto-Instrumentation Configuration
+
+        public IFrameworkLoggingBuilder EnableAutoInstrumentation(bool enabled = true)
+        {
+            if (enabled)
+            {
+                Services.Configure<AutoInstrumentationOptions>(opt =>
+                {
+                    opt.EnableDatabaseInstrumentation = true;
+                    opt.EnableRedisInstrumentation = true;
+                    opt.EnableBackgroundServiceInstrumentation = true;
+                    opt.EnableHttpClientInstrumentation = true;
+                });
+            }
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder ConfigureAutoInstrumentation(Action<AutoInstrumentationOptions> configure)
+        {
+            Services.Configure<AutoInstrumentationOptions>(configure);
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder EnableDatabaseInstrumentation(bool enabled = true)
+        {
+            Services.Configure<AutoInstrumentationOptions>(opt =>
+                opt.EnableDatabaseInstrumentation = enabled);
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder ConfigureDatabaseInstrumentation(Action<DatabaseInstrumentationOptions> configure)
+        {
+            Services.Configure<AutoInstrumentationOptions>(opt =>
+                configure?.Invoke(opt.Database));
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder EnableRedisInstrumentation(bool enabled = true)
+        {
+            Services.Configure<AutoInstrumentationOptions>(opt =>
+                opt.EnableRedisInstrumentation = enabled);
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder ConfigureRedisInstrumentation(Action<RedisInstrumentationOptions> configure)
+        {
+            Services.Configure<AutoInstrumentationOptions>(opt =>
+                configure?.Invoke(opt.Redis));
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder EnableBackgroundServiceInstrumentation(bool enabled = true)
+        {
+            Services.Configure<AutoInstrumentationOptions>(opt =>
+                opt.EnableBackgroundServiceInstrumentation = enabled);
+            return this;
+        }
+
+        public IFrameworkLoggingBuilder ConfigureBackgroundServiceInstrumentation(Action<BackgroundServiceInstrumentationOptions> configure)
+        {
+            Services.Configure<AutoInstrumentationOptions>(opt =>
+                configure?.Invoke(opt.BackgroundService));
+            return this;
+        }
+
+        // Memory Optimization Configuration
+
+        public IFrameworkLoggingBuilder OptimizeMemoryUsage(bool enabled = true)
+        {
+            if (enabled)
+            {
+                // Enable object pooling
+                Services.Configure<AsyncLoggingOptions>(opt =>
+                    opt.EnableObjectPooling = true);
+
+                // Configure smaller batch sizes for memory efficiency
+                Services.Configure<AsyncLoggingOptions>(opt =>
+                    opt.BatchSize = 25);
+            }
+            return this;
+        }
+
+        // Security Configuration
+
+        public IFrameworkLoggingBuilder EnableSecurityFeatures(bool enabled = true)
+        {
+            if (enabled)
+            {
+                // Enhanced sensitive data masking
+                MaskSensitiveFields("password", "token", "secret", "key", "auth", "credential", "pin", "ssn");
+                MaskSensitiveHeaders("Authorization", "Cookie", "Set-Cookie", "X-API-Key", "X-Auth-Token");
+
+                // Configure auto-instrumentation security
+                Services.Configure<AutoInstrumentationOptions>(opt =>
+                {
+                    opt.Database.LogSqlParameters = false;
+                    opt.Redis.LogValues = false;
+                });
+            }
             return this;
         }
     }

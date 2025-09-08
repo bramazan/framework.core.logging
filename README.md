@@ -19,24 +19,45 @@ dotnet add package Framework.Core.Logging
 
 ## Kullanım
 
-### 1. Modern Fluent API (Önerilen)
+### 1. Modern Fluent API (Önerilen) - Tek Satırla Tüm Otomatik Logging
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    // Modern fluent API ile konfigürasyon
+    // TEK SETUP ile her şey otomatik loglanır!
     services.AddFrameworkLogging(builder =>
         builder
             .SetApplicationName("MyApp")
+            
+            // HTTP Request/Response otomatik logging
             .EnableHttpLogging()
             .LogHeaders()
             .LogBody()
             .SetMaxContentLength(8192)
             .ExcludePaths("/health", "/metrics", "/swagger")
-            .MaskSensitiveFields("password", "token", "creditCard")
+            
+            // Global Exception Handling - Hiçbir exception kaçmaz!
+            .EnableGlobalExceptionHandling()
+            
+            // Async Logging - Performance için
+            .EnableAsyncLogging()
+            
+            // Auto-Instrumentation - Her şey otomatik loglanır!
+            .EnableAutoInstrumentation()
+            .EnableDatabaseInstrumentation()    // SQL queries otomatik
+            .EnableRedisInstrumentation()       // Redis operations otomatik
+            .EnableBackgroundServiceInstrumentation() // Background jobs otomatik
+            
+            // Security & Performance
+            .EnableSecurityFeatures()           // Enhanced data masking
+            .OptimizeMemoryUsage()              // Object pooling
+            
+            // Method logging
             .EnableMethodLogging()
             .LogMethodParameters()
             .LogExecutionTime()
+            
+            // Correlation ID
             .WithCorrelationId()
             .SetCorrelationIdHeader("X-Request-Id")
             .SetLogLevel(LogLevel.Information)
@@ -45,8 +66,8 @@ public void ConfigureServices(IServiceCollection services)
 
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
-    // HTTP logging middleware'ini ekle
-    app.UseHttpLogging();
+    // TEK MIDDLEWARE - Her şey çalışır!
+    app.UseFrameworkLogging(); // Global Exception + HTTP Logging + Auto-Instrumentation
     
     // Diğer middleware'ler...
     app.UseRouting();
@@ -56,6 +77,15 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     });
 }
 ```
+
+### 🎯 SONUÇ: Hiç kod yazmadan bunlar otomatik loglanır:
+- ✅ **HTTP Request/Response** (gelen/giden)
+- ✅ **Database queries** (Entity Framework)
+- ✅ **Redis operations** (GET, SET, DELETE)
+- ✅ **Background services** (IHostedService)
+- ✅ **Exception'lar** (global handling)
+- ✅ **Method calls** (controller + service)
+- ✅ **HttpClient calls** (dış API'lar)
 
 ### 2. Geleneksel Configuration Yöntemi
 
@@ -292,7 +322,21 @@ services.AddFrameworkLogging(builder =>
 
 ## Sürüm Geçmişi
 
-### v1.4.0 (Planlanıyor)
+### v1.5.0 (CURRENT) 🚀
+- **MAJOR UPDATE**: Global Exception Handling middleware eklendi
+- **YENİ**: Async Logging ile background queue processing
+- **YENİ**: Auto-Instrumentation sistemi
+  - Database operations otomatik logging (Entity Framework, ADO.NET)
+  - Redis operations otomatik logging
+  - Background services otomatik logging
+- **YENİ**: Memory optimization (Object pooling, batch processing)
+- **YENİ**: Enhanced security features (Advanced data masking)
+- **YENİ**: UseFrameworkLogging() tek middleware ile tüm features
+- **YENİ**: "Add once, log everything" - Zero-code instrumentation
+- Performance iyileştirmeleri ve memory efficiency
+- Kapsamlı documentation ve usage examples
+
+### v1.4.0
 - **YENİ**: Modern Fluent API desteği
 - **YENİ**: LoggingOptions ile type-safe configuration
 - **YENİ**: IFrameworkLoggingBuilder interface

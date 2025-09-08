@@ -7,12 +7,12 @@
   </PropertyGroup>
   <PropertyGroup>
   <PackageId>Framework.Core.Logging</PackageId>
-  <Version>1.4.0</Version>
+  <Version>1.5.0</Version>
   <Authors>Burak Ramazan</Authors>
   <Company>ÖdeAL</Company>
-  <Description>ÖdeAL Logging Package with HTTP Request/Response Logging Support</Description>
+  <Description>ÖdeAL Advanced Logging Package with Auto-Instrumentation, Global Exception Handling, and Async Logging</Description>
   <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  <PackageReleaseNotes>v1.4.0: Added modern Fluent API, Options pattern, improved developer experience</PackageReleaseNotes>
+  <PackageReleaseNotes>v1.5.0: MAJOR UPDATE - Added Global Exception Handling, Async Logging, Auto-Instrumentation (Database, Redis, Background Services), Memory Optimization, Enhanced Security. Now supports "Add once, log everything" with zero-code instrumentation!</PackageReleaseNotes>
 </PropertyGroup>
   <ItemGroup>
     <None Remove="Container\" />

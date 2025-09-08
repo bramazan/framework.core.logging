@@ -3,8 +3,10 @@ using Framework.Core.Logging.Builder;
 using Framework.Core.Logging.Handler;
 using Framework.Core.Logging.Helper;
 using Framework.Core.Logging.Logging.AppLogger;
+using Framework.Core.Logging.Logging.AsyncLogging;
 using Framework.Core.Logging.Middleware;
 using Framework.Core.Logging.Options;
+using Framework.Core.Logging.Instrumentation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.ObjectPool;
 using System;
 
 namespace Framework.Core.Logging.Extensions
@@ -68,6 +71,25 @@ namespace Framework.Core.Logging.Extensions
             services.AddTransient<HttpLoggingMiddleware>();
             services.AddTransient<HttpClientLoggingHandler>();
             services.AddTransient<MethodLoggingActionFilter>();
+
+            // Global Exception Handling ekle
+            services.AddSingleton<GlobalExceptionOptions>();
+            services.AddTransient<GlobalExceptionMiddleware>();
+
+            // Async Logging ekle
+            services.AddSingleton<AsyncLoggingOptions>();
+            services.AddSingleton<IAsyncLogger, AsyncLogger>();
+
+            // Auto-Instrumentation ekle
+            services.AddSingleton<AutoInstrumentationOptions>();
+            services.AddSingleton<AutoInstrumentationManager>();
+
+            // Object pooling for performance
+            services.AddSingleton<ObjectPool<LogEntry>>(provider =>
+            {
+                var policy = new LogEntryPooledObjectPolicy();
+                return new DefaultObjectPool<LogEntry>(policy);
+            });
 
             return services;
         }
@@ -210,11 +232,44 @@ namespace Framework.Core.Logging.Extensions
         }
 
         /// <summary>
-        /// Framework.Core.Logging HTTP logging pipeline'ını ekler (middleware + exceptions)
+        /// Global exception handling middleware'ini ekler
         /// </summary>
+        public static IApplicationBuilder UseGlobalExceptionHandling(this IApplicationBuilder app)
+        {
+            return app.UseMiddleware<GlobalExceptionMiddleware>();
+        }
+
+        /// <summary>
+        /// Framework.Core.Logging tam pipeline'ını ekler (Global Exception + HTTP Logging + Auto-Instrumentation)
+        /// </summary>
+        public static IApplicationBuilder UseFrameworkLogging(this IApplicationBuilder app)
+        {
+            // Initialize auto-instrumentation
+            var autoInstrumentationManager = app.ApplicationServices.GetService<AutoInstrumentationManager>();
+            autoInstrumentationManager?.Initialize();
+
+            // Add middleware pipeline in correct order
+            return app.UseGlobalExceptionHandling()
+                     .UseHttpLogging();
+        }
+
+        /// <summary>
+        /// Framework.Core.Logging HTTP logging pipeline'ını ekler (middleware + exceptions) - Legacy method
+        /// </summary>
+        [Obsolete("UseFrameworkCoreHttpLogging is deprecated. Use UseFrameworkLogging() for full pipeline or UseHttpLogging() for HTTP only.", false)]
         public static IApplicationBuilder UseFrameworkCoreHttpLogging(this IApplicationBuilder app)
         {
             return app.UseMiddleware<HttpLoggingMiddleware>();
+        }
+
+        /// <summary>
+        /// Auto-instrumentation'ı initialize eder
+        /// </summary>
+        public static IApplicationBuilder InitializeAutoInstrumentation(this IApplicationBuilder app)
+        {
+            var autoInstrumentationManager = app.ApplicationServices.GetService<AutoInstrumentationManager>();
+            autoInstrumentationManager?.Initialize();
+            return app;
         }
     }
 }
