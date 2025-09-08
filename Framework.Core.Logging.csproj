@@ -7,12 +7,12 @@
   </PropertyGroup>
   <PropertyGroup>
   <PackageId>Framework.Core.Logging</PackageId>
-  <Version>1.5.1</Version>
+  <Version>1.5.2</Version>
   <Authors>Burak Ramazan</Authors>
   <Company>ÖdeAL</Company>
   <Description>ÖdeAL Advanced Logging Package with Auto-Instrumentation, Global Exception Handling, and Async Logging</Description>
   <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  <PackageReleaseNotes>v1.5.1: CRITICAL FIX - Fixed Dependency Injection lifetime issue by refactoring CorrelationIdHelper to use AsyncLocal pattern instead of IHttpContextAccessor. This eliminates the scoped/singleton conflict and enables proper DI registration.</PackageReleaseNotes>
+  <PackageReleaseNotes>v1.5.2: Stable release with enhanced DI lifetime management and improved async logging performance.</PackageReleaseNotes>
 </PropertyGroup>
   <ItemGroup>
     <None Remove="Container\" />
