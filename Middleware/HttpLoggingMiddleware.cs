@@ -3,7 +3,9 @@ using Framework.Core.Logging.Logging.AppLogger;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IO;
 using Newtonsoft.Json;
+using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,19 +15,34 @@ namespace Framework.Core.Logging.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly IAppLogger _appLogger;
+        private readonly ICorrelationIdHelper _correlationIdHelper;
         private readonly PlatformAppLoggerConfiguration _config;
         private readonly RecyclableMemoryStreamManager _recyclableMemoryStreamManager;
+        private const string CorrelationIdHeaderName = "X-Correlation-Id";
 
-        public HttpLoggingMiddleware(RequestDelegate next, IAppLogger appLogger, PlatformAppLoggerConfiguration config)
+        public HttpLoggingMiddleware(RequestDelegate next, IAppLogger appLogger, ICorrelationIdHelper correlationIdHelper, PlatformAppLoggerConfiguration config)
         {
             _next = next;
             _appLogger = appLogger;
+            _correlationIdHelper = correlationIdHelper;
             _config = config;
             _recyclableMemoryStreamManager = new RecyclableMemoryStreamManager();
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
+            // Extract or generate correlation ID at the start of request
+            var correlationId = ExtractOrGenerateCorrelationId(context);
+            
+            // Set correlation ID in AsyncLocal for thread-safe access throughout request
+            _correlationIdHelper.Set(correlationId);
+            
+            // Add correlation ID to response headers
+            if (!context.Response.Headers.ContainsKey(CorrelationIdHeaderName))
+            {
+                context.Response.Headers.Add(CorrelationIdHeaderName, correlationId);
+            }
+
             if (!_config.HttpLogging.LogRequests && !_config.HttpLogging.LogResponses)
             {
                 await _next(context);
@@ -40,7 +57,6 @@ namespace Framework.Core.Logging.Middleware
             }
 
             var stopwatch = Stopwatch.StartNew();
-            var correlationId = context.TraceIdentifier;
 
             try
             {
@@ -76,6 +92,32 @@ namespace Framework.Core.Logging.Middleware
                 LogException(ex, correlationId, context.Request.Path);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Extracts correlation ID from request headers or generates a new one
+        /// Priority: X-Correlation-Id header -> TraceIdentifier -> New GUID
+        /// </summary>
+        private string ExtractOrGenerateCorrelationId(HttpContext context)
+        {
+            // Check for correlation ID in request headers
+            if (context.Request.Headers.TryGetValue(CorrelationIdHeaderName, out var headerValue))
+            {
+                var correlationId = headerValue.FirstOrDefault();
+                if (!string.IsNullOrEmpty(correlationId))
+                {
+                    return correlationId;
+                }
+            }
+            
+            // Fallback to TraceIdentifier if available
+            if (!string.IsNullOrEmpty(context.TraceIdentifier))
+            {
+                return context.TraceIdentifier;
+            }
+            
+            // Generate new GUID as last resort
+            return Guid.NewGuid().ToString();
         }
 
         private async Task LogHttpRequest(HttpContext context, string correlationId)

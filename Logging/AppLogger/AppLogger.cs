@@ -1,5 +1,4 @@
 ﻿using Framework.Core.Logging.Helper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -13,34 +12,23 @@ namespace Framework.Core.Logging.Logging.AppLogger
     {
 
         private readonly PlatformAppLoggerConfiguration _currentConfig;
-        private readonly ICorrelationIdHelper _correlationIdHelper;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private static readonly ICorrelationIdHelper _correlationIdHelper = new CorrelationIdHelper();
         private readonly ILogger<AppLogger> _logger;
 
         public AppLogger(PlatformAppLoggerConfiguration config,
-            ICorrelationIdHelper correlationIdHelper,
-            IHttpContextAccessor httpContextAccessor,
             ILogger<AppLogger> logger) : base("AppLogger", config.ConsoleEnabled, config.DebugMode)
         {
             _currentConfig = config;
 
             AnnounceConfig();
 
-            _correlationIdHelper = correlationIdHelper;
-            _httpContextAccessor = httpContextAccessor;
-
             Trace("Tracelog: PlatformAppLoggerProvider is up and running.", MethodBase.GetCurrentMethod());
             _logger = logger;
         }
 
-        public static AppLogger Create(IConfiguration configuration, ICorrelationIdHelper correlationIdHelper, ILogger<AppLogger> logger, IHttpContextAccessor? httpContextAccessor = null)
+        public static AppLogger Create(IConfiguration configuration, ILogger<AppLogger> logger)
         {
-            return new AppLogger(PlatformAppLoggerConfiguration.Create(configuration), correlationIdHelper, httpContextAccessor ?? new HttpContextAccessor(),logger);
-        }
-
-        public static AppLogger Create(IConfiguration configuration, ILogger<AppLogger> logger, IHttpContextAccessor? httpContextAccessor = null)
-        {
-            return new AppLogger(PlatformAppLoggerConfiguration.Create(configuration), new CorrelationIdHelper(httpContextAccessor ?? new HttpContextAccessor()), httpContextAccessor ?? new HttpContextAccessor(),logger);
+            return new AppLogger(PlatformAppLoggerConfiguration.Create(configuration), logger);
         }
 
         private void AnnounceConfig()
@@ -122,7 +110,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
                     methodBase?.Name,
                     _correlationId,
                     JsonConvert.SerializeObject(logEventInfo, Formatting.None).ClearSensitiveValues().Crop(180 * 1024),
-                    _httpContextAccessor?.HttpContext?.Request?.Headers.GetHeaderJson(20 * 1024).ClearSensitiveValues());
+                    "{}"); // Headers will be logged by HttpLoggingMiddleware
 
                 return _correlationId;
             }
@@ -149,7 +137,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
                     methodExecutionDuration,
                     messageCode,
                     JsonConvert.SerializeObject(logEventInfo, Formatting.None).ClearSensitiveValues().Crop(180 * 1024),
-                    _httpContextAccessor?.HttpContext?.Request?.Headers.GetHeaderJson(20 * 1024).ClearSensitiveValues());
+                    "{}"); // Headers will be logged by HttpLoggingMiddleware
 
                 return _correlationId;
             }
@@ -174,7 +162,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
                     methodBase?.Name,
                     _correlationId,
                     message.ClearSensitiveValues().Crop(180 * 1024),
-                    _httpContextAccessor?.HttpContext?.Request?.Headers.GetHeaderJson(20 * 1024).ClearSensitiveValues());
+                    "{}"); // Headers will be logged by HttpLoggingMiddleware
 
                 return _correlationId;
             }
@@ -203,7 +191,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
                     exception?.Message.ClearSensitiveValues().Crop(100 * 1024),
                     extraMessage?.ClearSensitiveValues().Crop(200 * 1024),
                     isCustomException,
-                    _httpContextAccessor?.HttpContext?.Request?.Headers.GetHeaderJson(20 * 1024).ClearSensitiveValues());
+                    "{}"); // Headers will be logged by HttpLoggingMiddleware
 
                 return _correlationId;
             }

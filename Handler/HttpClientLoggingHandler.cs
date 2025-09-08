@@ -12,13 +12,12 @@ namespace Framework.Core.Logging.Handler
     {
         private readonly IAppLogger _appLogger;
         private readonly PlatformAppLoggerConfiguration _config;
-        private readonly ICorrelationIdHelper _correlationIdHelper;
+        private static readonly ICorrelationIdHelper _correlationIdHelper = new CorrelationIdHelper();
 
-        public HttpClientLoggingHandler(IAppLogger appLogger, PlatformAppLoggerConfiguration config, ICorrelationIdHelper correlationIdHelper)
+        public HttpClientLoggingHandler(IAppLogger appLogger, PlatformAppLoggerConfiguration config)
         {
             _appLogger = appLogger;
             _config = config;
-            _correlationIdHelper = correlationIdHelper;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

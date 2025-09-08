@@ -16,6 +16,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.ObjectPool;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Framework.Core.Logging.Extensions
 {
@@ -33,8 +35,7 @@ namespace Framework.Core.Logging.Extensions
             if (configure == null)
                 throw new ArgumentNullException(nameof(configure));
 
-            // HttpContextAccessor'ı ekle (eğer yoksa)
-            services.AddHttpContextAccessor();
+            // HttpContextAccessor removed - using AsyncLocal pattern instead
 
             // Modern options pattern kullan
             var options = new LoggingOptions();
@@ -63,18 +64,16 @@ namespace Framework.Core.Logging.Extensions
             var legacyConfig = CreateLegacyConfigFromOptions(options);
             services.AddSingleton(legacyConfig);
 
-            // Core logging servisleri ekle
-            services.AddScoped<ICorrelationIdHelper, CorrelationIdHelper>();
+            // Core logging servisleri ekle - CorrelationIdHelper singleton olmalı
+            services.AddSingleton<ICorrelationIdHelper, CorrelationIdHelper>();
             services.AddSingleton<IAppLogger, AppLogger>();
 
-            // HTTP logging bileşenleri ekle
-            services.AddTransient<HttpLoggingMiddleware>();
+            // HTTP logging bileşenleri ekle - Middleware'lar otomatik resolve edilir
             services.AddTransient<HttpClientLoggingHandler>();
             services.AddTransient<MethodLoggingActionFilter>();
 
             // Global Exception Handling ekle
             services.AddSingleton<GlobalExceptionOptions>();
-            services.AddTransient<GlobalExceptionMiddleware>();
 
             // Async Logging ekle
             services.AddSingleton<AsyncLoggingOptions>();
@@ -102,8 +101,7 @@ namespace Framework.Core.Logging.Extensions
         /// <returns>Service collection for chaining</returns>
         public static IServiceCollection AddFrameworkCoreLogging(this IServiceCollection services, IConfiguration configuration)
         {
-            // HttpContextAccessor'ı ekle (eğer yoksa)
-            services.AddHttpContextAccessor();
+            // HttpContextAccessor removed - using AsyncLocal pattern instead
 
             // Legacy configuration oluştur ve singleton olarak kaydet
             var loggingConfig = PlatformAppLoggerConfiguration.Create(configuration);
@@ -123,12 +121,11 @@ namespace Framework.Core.Logging.Extensions
                 opt.CorrelationId = modernOptions.CorrelationId;
             });
 
-            // Core logging servisleri ekle
-            services.AddScoped<ICorrelationIdHelper, CorrelationIdHelper>();
+            // Core logging servisleri ekle - CorrelationIdHelper singleton olmalı
+            services.AddSingleton<ICorrelationIdHelper, CorrelationIdHelper>();
             services.AddSingleton<IAppLogger, AppLogger>();
 
-            // HTTP logging bileşenleri ekle
-            services.AddTransient<HttpLoggingMiddleware>();
+            // HTTP logging bileşenleri ekle - Middleware'lar otomatik resolve edilir
             services.AddTransient<HttpClientLoggingHandler>();
             services.AddTransient<MethodLoggingActionFilter>();
 

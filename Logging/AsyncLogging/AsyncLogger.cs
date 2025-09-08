@@ -13,7 +13,7 @@ namespace Framework.Core.Logging.Logging.AsyncLogging
         private readonly ChannelWriter<LogEntry> _writer;
         private readonly ChannelReader<LogEntry> _reader;
         private readonly IAppLogger _appLogger;
-        private readonly ICorrelationIdHelper _correlationIdHelper;
+        private static readonly ICorrelationIdHelper _correlationIdHelper = new CorrelationIdHelper();
         private readonly PlatformAppLoggerConfiguration _config;
         private readonly ObjectPool<LogEntry> _logEntryPool;
         private readonly Task _backgroundTask;
@@ -22,12 +22,10 @@ namespace Framework.Core.Logging.Logging.AsyncLogging
 
         public AsyncLogger(
             IAppLogger appLogger,
-            ICorrelationIdHelper correlationIdHelper,
             PlatformAppLoggerConfiguration config,
             AsyncLoggingOptions options)
         {
             _appLogger = appLogger;
-            _correlationIdHelper = correlationIdHelper;
             _config = config;
 
             // Create bounded channel for log entries
