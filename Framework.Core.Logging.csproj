@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <PropertyGroup>
+  <PackageId>Framework.Core.Logging</PackageId>
+  <Version>1.1.0</Version>
+  <Authors>Burak Ramazan</Authors>
+  <Company>ÖdeAL</Company>
+  <Description>ÖdeAL Logging Package with HTTP Request/Response Logging Support</Description>
+  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  <PackageReleaseNotes>v1.1.0: Added HTTP Request/Response logging, HttpClient logging, and Method-level logging support</PackageReleaseNotes>
+</PropertyGroup>
+  <ItemGroup>
+    <None Remove="Container\" />
+    <None Remove="Handler\" />
+    <None Remove="Logging\" />
+    <None Remove="Helper\" />
+    <None Remove="Logging\AppLogger\" />
+    <None Remove="Middleware\" />
+    <None Remove="ActionFilter\" />
+    <None Remove="Extensions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Container\" />
+    <Folder Include="Handler\" />
+    <Folder Include="Logging\" />
+    <Folder Include="Helper\" />
+    <Folder Include="Logging\AppLogger\" />
+    <Folder Include="Middleware\" />
+    <Folder Include="ActionFilter\" />
+    <Folder Include="Extensions\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="6.5.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.0.3" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
+  </ItemGroup>
+</Project>
