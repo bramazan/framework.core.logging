@@ -5,7 +5,7 @@ namespace Framework.Core.Logging.Helper
 {
     public class CorrelationIdHelper : ICorrelationIdHelper
     {
-        private string RefId;
+        private string? RefId;
         private const string RefIdKey = "X-CorrelationId";
 
         private readonly IHttpContextAccessor _httpContextAcccessor;
@@ -19,7 +19,7 @@ namespace Framework.Core.Logging.Helper
         {
             if (Contains())
             {
-                return _httpContextAcccessor?.HttpContext?.Request.Headers[RefIdKey].ToString();
+                return _httpContextAcccessor?.HttpContext?.Request.Headers[RefIdKey].ToString() ?? Guid.NewGuid().ToString();
             }
             else
             {
@@ -57,7 +57,10 @@ namespace Framework.Core.Logging.Helper
                     _httpContextAcccessor.HttpContext.Request.Headers.Remove(RefIdKey);
                 }
 
-                _httpContextAcccessor.HttpContext.Request.Headers.Add(RefIdKey, RefId);
+                if (!string.IsNullOrEmpty(RefId))
+                {
+                    _httpContextAcccessor.HttpContext.Request.Headers.Add(RefIdKey, RefId);
+                }
             }
         }
     }

@@ -165,28 +165,28 @@ namespace Framework.Core.Logging.ActionFilter
                 if (context is ActionExecutingContext executingContext)
                 {
                     return executingContext.ActionDescriptor.GetType().GetMethod("GetMethodInfo")?.Invoke(executingContext.ActionDescriptor, null) as MethodBase
-                           ?? MethodBase.GetCurrentMethod();
+                           ?? MethodBase.GetCurrentMethod() ?? typeof(MethodLoggingActionFilter).GetMethod(nameof(GetMethodBase), BindingFlags.NonPublic | BindingFlags.Instance)!;
                 }
                 else if (context is ActionExecutedContext executedContext)
                 {
                     return executedContext.ActionDescriptor.GetType().GetMethod("GetMethodInfo")?.Invoke(executedContext.ActionDescriptor, null) as MethodBase
-                           ?? MethodBase.GetCurrentMethod();
+                           ?? MethodBase.GetCurrentMethod() ?? typeof(MethodLoggingActionFilter).GetMethod(nameof(GetMethodBase), BindingFlags.NonPublic | BindingFlags.Instance)!;
                 }
                 else if (context is ExceptionContext exceptionContext)
                 {
                     return exceptionContext.ActionDescriptor.GetType().GetMethod("GetMethodInfo")?.Invoke(exceptionContext.ActionDescriptor, null) as MethodBase
-                           ?? MethodBase.GetCurrentMethod();
+                           ?? MethodBase.GetCurrentMethod() ?? typeof(MethodLoggingActionFilter).GetMethod(nameof(GetMethodBase), BindingFlags.NonPublic | BindingFlags.Instance)!;
                 }
 
-                return MethodBase.GetCurrentMethod();
+                return MethodBase.GetCurrentMethod() ?? typeof(MethodLoggingActionFilter).GetMethod(nameof(GetMethodBase), BindingFlags.NonPublic | BindingFlags.Instance)!;
             }
             catch
             {
-                return MethodBase.GetCurrentMethod();
+                return MethodBase.GetCurrentMethod() ?? typeof(MethodLoggingActionFilter).GetMethod(nameof(GetMethodBase), BindingFlags.NonPublic | BindingFlags.Instance)!;
             }
         }
 
-        private string SerializeActionArguments(IDictionary<string, object> actionArguments)
+        private string SerializeActionArguments(IDictionary<string, object?> actionArguments)
         {
             try
             {
@@ -199,7 +199,7 @@ namespace Framework.Core.Logging.ActionFilter
                 {
                     if (arg.Value == null)
                     {
-                        sanitizedArguments[arg.Key] = null;
+                        sanitizedArguments[arg.Key] = null!;
                         continue;
                     }
 
@@ -211,7 +211,7 @@ namespace Framework.Core.Logging.ActionFilter
                     // Try to deserialize back to object for cleaner JSON structure
                     try
                     {
-                        sanitizedArguments[arg.Key] = JsonConvert.DeserializeObject(masked);
+                        sanitizedArguments[arg.Key] = JsonConvert.DeserializeObject(masked) ?? masked;
                     }
                     catch
                     {

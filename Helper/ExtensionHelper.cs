@@ -138,7 +138,7 @@ namespace Framework.Core.Logging.Helper
             }
         }
 
-        public static string ReadPartialFromStream(this Stream body, long maxLength)
+        public static string? ReadPartialFromStream(this Stream? body, long maxLength)
         {
             if (body == null) return null;
             if (!body.CanSeek) return null;

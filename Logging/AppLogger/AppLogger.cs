@@ -33,14 +33,14 @@ namespace Framework.Core.Logging.Logging.AppLogger
             _logger = logger;
         }
 
-        public static AppLogger Create(IConfiguration configuration, ICorrelationIdHelper correlationIdHelper, ILogger<AppLogger> logger, IHttpContextAccessor httpContextAccessor = null)
+        public static AppLogger Create(IConfiguration configuration, ICorrelationIdHelper correlationIdHelper, ILogger<AppLogger> logger, IHttpContextAccessor? httpContextAccessor = null)
         {
             return new AppLogger(PlatformAppLoggerConfiguration.Create(configuration), correlationIdHelper, httpContextAccessor ?? new HttpContextAccessor(),logger);
         }
 
-        public static AppLogger Create(IConfiguration configuration, ILogger<AppLogger> logger, IHttpContextAccessor httpContextAccessor = null)
+        public static AppLogger Create(IConfiguration configuration, ILogger<AppLogger> logger, IHttpContextAccessor? httpContextAccessor = null)
         {
-            return new AppLogger(PlatformAppLoggerConfiguration.Create(configuration), new CorrelationIdHelper(httpContextAccessor), httpContextAccessor ?? new HttpContextAccessor(),logger);
+            return new AppLogger(PlatformAppLoggerConfiguration.Create(configuration), new CorrelationIdHelper(httpContextAccessor ?? new HttpContextAccessor()), httpContextAccessor ?? new HttpContextAccessor(),logger);
         }
 
         private void AnnounceConfig()
@@ -88,7 +88,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
                 foreach (var prop in props)
                 {
                     string key = prop[1..^1];
-                    appLog.Properties[key] = propertyValues[index];
+                    appLog.Properties[key] = propertyValues?[index];
                     index++;
                 }
 
@@ -129,7 +129,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
             catch (Exception ex)
             {
                 Console.Out.WriteLine("Error while PlatformLog MethodEntry: " + ex.ToString());
-                return null;
+                return string.Empty;
             }
         }
 
@@ -156,7 +156,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
             catch (Exception ex)
             {
                 Console.Out.WriteLine("Error while PlatformLog MethodExit: " + ex.ToString());
-                return null;
+                return string.Empty;
             }
         }
 
@@ -181,7 +181,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
             catch (Exception ex)
             {
                 Console.Out.WriteLine("Error while PlatformLog Trace: " + ex.ToString());
-                return null;
+                return string.Empty;
             }
         }
 
@@ -210,7 +210,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
             catch (Exception ex)
             {
                 Console.Out.WriteLine("Error while PlatformLog Exception: " + ex.ToString());
-                return null;
+                return string.Empty;
             }
         }
     }

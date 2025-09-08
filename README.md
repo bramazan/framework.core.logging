@@ -9,7 +9,7 @@
 - 🎯 **Method-Level Logging**: Action Filter ile controller metodlarının çalışma sürelerini ve detaylarını loglar
 - 📊 **Correlation ID**: İstekler arası takip için correlation ID desteği
 - ⚙️ **Konfigurasyon**: Esnek konfigürasyon seçenekleri
-- 🏗️ **Autofac Integration**: Dependency injection desteği
+- 🏗️ **Microsoft DI Integration**: .NET Core built-in dependency injection desteği
 
 ## Kurulum
 
@@ -19,18 +19,28 @@ dotnet add package Framework.Core.Logging
 
 ## Kullanım
 
-### 1. Startup.cs'de Servisleri Kaydetme
+### 1. Modern Fluent API (Önerilen)
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    // Logging servilerini ekle
-    services.AddFrameworkLogging(configuration =>
-    {
-        configuration.EnableHttpLogging = true;
-        configuration.EnableMethodLogging = true;
-        configuration.LogLevel = LogLevel.Information;
-    });
+    // Modern fluent API ile konfigürasyon
+    services.AddFrameworkLogging(builder =>
+        builder
+            .SetApplicationName("MyApp")
+            .EnableHttpLogging()
+            .LogHeaders()
+            .LogBody()
+            .SetMaxContentLength(8192)
+            .ExcludePaths("/health", "/metrics", "/swagger")
+            .MaskSensitiveFields("password", "token", "creditCard")
+            .EnableMethodLogging()
+            .LogMethodParameters()
+            .LogExecutionTime()
+            .WithCorrelationId()
+            .SetCorrelationIdHeader("X-Request-Id")
+            .SetLogLevel(LogLevel.Information)
+    );
 }
 
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -39,6 +49,26 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     app.UseHttpLogging();
     
     // Diğer middleware'ler...
+    app.UseRouting();
+    app.UseEndpoints(endpoints =>
+    {
+        endpoints.MapControllers();
+    });
+}
+```
+
+### 2. Geleneksel Configuration Yöntemi
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    // Geleneksel configuration-based yaklaşım
+    services.AddFrameworkCoreLogging(Configuration);
+}
+
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseHttpLogging();
     app.UseRouting();
     app.UseEndpoints(endpoints =>
     {
@@ -115,15 +145,61 @@ public class MyService
 ### AppLogger Konfigürasyonu
 
 ```csharp
-services.AddFrameworkLogging(config =>
+### Fluent API Konfigürasyonu
+
+```csharp
+services.AddFrameworkLogging(builder =>
 {
-    config.EnableHttpLogging = true;          // HTTP logging aktif/pasif
-    config.EnableMethodLogging = true;        // Method logging aktif/pasif
-    config.LogLevel = LogLevel.Information;   // Minimum log seviyesi
-    config.IncludeHeaders = true;             // HTTP headers loglanacak mı
-    config.IncludeBody = true;                // Request/Response body loglanacak mı
-    config.MaxBodySize = 4096;                // Maksimum body boyutu (byte)
+    // HTTP Logging
+    builder.EnableHttpLogging()
+           .LogHeaders()
+           .LogBody()
+           .SetMaxContentLength(8192)
+           .ExcludePaths("/health", "/metrics")
+           .MaskSensitiveFields("password", "token", "pin")
+           .MaskSensitiveHeaders("Authorization", "X-API-Key");
+
+    // Method Logging
+    builder.EnableMethodLogging()
+           .LogMethodParameters()
+           .LogExecutionTime()
+           .SetMinimumExecutionTime(100); // 100ms'den uzun işlemleri logla
+
+    // Correlation ID
+    builder.WithCorrelationId()
+           .SetCorrelationIdHeader("X-Correlation-Id")
+           .GenerateCorrelationIdIfMissing()
+           .IncludeCorrelationIdInResponse();
+
+    // Genel Ayarlar
+    builder.SetApplicationName("MyApplication")
+           .EnableConsoleLogging()
+           .SetLogLevel(LogLevel.Information);
 });
+```
+
+### Configuration File Yöntemi
+
+```json
+{
+  "Logging": {
+    "ApplicationName": "MyApp",
+    "ConsoleEnabled": true,
+    "DebugMode": false,
+    "HttpLogging": {
+      "LogRequests": true,
+      "LogResponses": true,
+      "MaxBodySize": 4096,
+      "IgnoredPaths": ["/health", "/metrics"]
+    }
+  }
+}
+```
+
+```csharp
+// Startup.cs'de
+services.AddFrameworkCoreLogging(Configuration);
+```
 ```
 
 ### HTTP Logging Konfigürasyonu
@@ -153,20 +229,19 @@ Framework aşağıdaki log türlerini destekler:
 
 ## Gereksinimler
 
-- .NET 6.0 veya üzeri
-- ASP.NET Core 6.0 veya üzeri
+- .NET 9.0 veya üzeri
+- ASP.NET Core 9.0 veya üzeri
 
 ## Bağımlılıklar
 
-- Autofac 6.5.0
-- Microsoft.Extensions.DependencyInjection 7.0.0
-- Microsoft.Extensions.Logging.Configuration 7.0.0
-- Microsoft.AspNetCore.Http 2.2.2
+- Microsoft.Extensions.DependencyInjection 9.0.0
+- Microsoft.Extensions.Logging.Configuration 9.0.0
+- Microsoft.AspNetCore.Http.Abstractions 2.2.0
 - Microsoft.AspNetCore.Mvc.Core 2.2.5
-- Microsoft.Extensions.Http 7.0.0
+- Microsoft.Extensions.Http 9.0.0
 - Newtonsoft.Json 13.0.3
-- System.IdentityModel.Tokens.Jwt 7.0.3
-- Microsoft.IO.RecyclableMemoryStream 2.3.2
+- System.IdentityModel.Tokens.Jwt 8.2.0
+- Microsoft.IO.RecyclableMemoryStream 3.0.1
 
 ## Lisans
 
@@ -176,7 +251,62 @@ Bu proje ÖdeAL tarafından geliştirilmiştir.
 
 Katkıda bulunmak için lütfen pull request gönderin veya issue açın.
 
+## Gelişmiş Kullanım
+
+### HttpClient Logging
+
+```csharp
+services.AddHttpClient<MyApiClient>()
+        .AddHttpClientLogging();
+```
+
+### Action Filter ile Method Logging
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class MyController : ControllerBase
+{
+    [HttpGet]
+    [MethodLogging] // Otomatik method logging
+    public async Task<IActionResult> GetData()
+    {
+        return Ok();
+    }
+}
+```
+
+### Programmatic Configuration
+
+```csharp
+services.AddFrameworkLogging(builder =>
+    builder.Configure(options =>
+    {
+        options.ApplicationName = "CustomApp";
+        options.ConsoleEnabled = Environment.IsDevelopment();
+        options.HttpLogging.MaxContentLength = 16384;
+        options.MethodLogging.MinimumExecutionTimeMs = 500;
+    })
+);
+```
+
 ## Sürüm Geçmişi
+
+### v1.4.0 (Planlanıyor)
+- **YENİ**: Modern Fluent API desteği
+- **YENİ**: LoggingOptions ile type-safe configuration
+- **YENİ**: IFrameworkLoggingBuilder interface
+- Geliştirilmiş developer experience
+- Backward compatibility korundu
+
+### v1.3.0
+- **BREAKING CHANGE**: Autofac bağımlılığı kaldırıldı
+- Tamamen Microsoft.Extensions.DependencyInjection kullanılıyor
+- .NET 9.0 desteği
+- Nullable reference types uyarıları düzeltildi
+
+### v1.2.0
+- .NET 9.0 desteği eklendi
 
 ### v1.1.0
 - HTTP Request/Response logging eklendi

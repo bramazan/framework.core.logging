@@ -17,8 +17,8 @@ namespace Framework.Core.Logging.Logging.AppLogger
             var conf = new PlatformAppLoggerConfiguration
             {
                 LoggerApplicationName = configuration["Logging.ApplicationName"] ?? $"{MachineName}-{EnvironmentName}",
-                ConsoleEnabled = GetConsoleLoggingState(configuration["Logging.ConsoleEnabled"], EnvironmentName),
-                DebugMode = GetDebugMode(configuration["Logging.DebugMode"]),
+                ConsoleEnabled = GetConsoleLoggingState(configuration["Logging.ConsoleEnabled"] ?? string.Empty, EnvironmentName),
+                DebugMode = GetDebugMode(configuration["Logging.DebugMode"] ?? string.Empty),
                 HttpLogging = HttpLoggingConfiguration.Create(configuration)
             };
 
@@ -45,7 +45,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
 
         public bool Enabled { get; set; }
 
-        public string LoggerApplicationName { get; set; }
+        public string LoggerApplicationName { get; set; } = string.Empty;
 
         public HttpLoggingConfiguration HttpLogging { get; set; } = new();
 
