@@ -57,7 +57,7 @@ namespace Framework.Core.Logging.Helper
         /// </summary>
         public void Clear()
         {
-            _correlationId.Value = null;
+            _correlationId.Value = null!;
         }
     }
 }
