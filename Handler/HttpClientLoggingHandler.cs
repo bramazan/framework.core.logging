@@ -1,8 +1,8 @@
 using Framework.Core.Logging.Helper;
 using Framework.Core.Logging.Logging.AppLogger;
-using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,12 +12,13 @@ namespace Framework.Core.Logging.Handler
     {
         private readonly IAppLogger _appLogger;
         private readonly PlatformAppLoggerConfiguration _config;
-        private static readonly ICorrelationIdHelper _correlationIdHelper = new CorrelationIdHelper();
+        private readonly ICorrelationIdHelper _correlationIdHelper;
 
-        public HttpClientLoggingHandler(IAppLogger appLogger, PlatformAppLoggerConfiguration config)
+        public HttpClientLoggingHandler(IAppLogger appLogger, PlatformAppLoggerConfiguration config, ICorrelationIdHelper correlationIdHelper)
         {
             _appLogger = appLogger;
             _config = config;
+            _correlationIdHelper = correlationIdHelper;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -88,7 +89,7 @@ namespace Framework.Core.Logging.Handler
                     request.Method.Method,
                     request.RequestUri?.ToString(),
                     correlationId,
-                    JsonConvert.SerializeObject(logData, Formatting.None)
+                    JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)
@@ -136,7 +137,7 @@ namespace Framework.Core.Logging.Handler
                     request.RequestUri?.ToString(),
                     correlationId,
                     elapsedMilliseconds,
-                    JsonConvert.SerializeObject(logData, Formatting.None)
+                    JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)
@@ -166,7 +167,7 @@ namespace Framework.Core.Logging.Handler
                     request.RequestUri?.ToString(),
                     correlationId,
                     elapsedMilliseconds,
-                    JsonConvert.SerializeObject(logData, Formatting.None)
+                    JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)
@@ -196,7 +197,7 @@ namespace Framework.Core.Logging.Handler
                     }
                 }
 
-                var json = JsonConvert.SerializeObject(headerDict, Formatting.None);
+                var json = JsonSerializer.Serialize(headerDict);
                 return json.Length > _config.HttpLogging.MaxHeaderSize 
                     ? json.Crop(_config.HttpLogging.MaxHeaderSize) 
                     : json;
