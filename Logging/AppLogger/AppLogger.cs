@@ -19,6 +19,17 @@ namespace Framework.Core.Logging.Logging.AppLogger
         {
             _currentConfig = config;
 
+            // DEBUG: Logger dependency kontrolü
+            if (logger == null)
+            {
+                Console.WriteLine("DEBUG: ILogger<AppLogger> is NULL! This will cause ArgumentNullException.");
+                Console.WriteLine("DEBUG: Make sure services.AddLogging() is called in DI container.");
+            }
+            else
+            {
+                Console.WriteLine("DEBUG: ILogger<AppLogger> successfully injected.");
+            }
+
             AnnounceConfig();
 
             Trace("Tracelog: PlatformAppLoggerProvider is up and running.", MethodBase.GetCurrentMethod());

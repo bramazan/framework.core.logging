@@ -64,6 +64,10 @@ namespace Framework.Core.Logging.Extensions
             var legacyConfig = CreateLegacyConfigFromOptions(options);
             services.AddSingleton(legacyConfig);
 
+            // DEBUG: ILogger<T> için gerekli logging infrastructure'ı ekle
+            Console.WriteLine("DEBUG: Adding .NET Logging infrastructure...");
+            services.AddLogging();
+
             // Core logging servisleri ekle - CorrelationIdHelper singleton olmalı
             services.AddSingleton<ICorrelationIdHelper, CorrelationIdHelper>();
             services.AddSingleton<IAppLogger, AppLogger>();
@@ -120,6 +124,10 @@ namespace Framework.Core.Logging.Extensions
                 opt.MethodLogging = modernOptions.MethodLogging;
                 opt.CorrelationId = modernOptions.CorrelationId;
             });
+
+            // DEBUG: ILogger<T> için gerekli logging infrastructure'ı ekle
+            Console.WriteLine("DEBUG: Adding .NET Logging infrastructure (legacy method)...");
+            services.AddLogging();
 
             // Core logging servisleri ekle - CorrelationIdHelper singleton olmalı
             services.AddSingleton<ICorrelationIdHelper, CorrelationIdHelper>();
