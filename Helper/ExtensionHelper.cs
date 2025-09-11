@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -97,7 +97,7 @@ namespace Framework.Core.Logging.Helper
                     }
                 }
 
-                return JsonConvert.SerializeObject(dict, Formatting.None);
+                return JsonSerializer.Serialize(dict);
             }
             else
             {
@@ -240,7 +240,7 @@ namespace Framework.Core.Logging.Helper
                     }
                 }
 
-                return JsonConvert.SerializeObject(dict, Formatting.None);
+                return JsonSerializer.Serialize(dict);
             }
 
             return emptyJson;

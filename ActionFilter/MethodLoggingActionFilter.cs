@@ -1,7 +1,7 @@
 using Framework.Core.Logging.Helper;
 using Framework.Core.Logging.Logging.AppLogger;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -203,7 +203,7 @@ namespace Framework.Core.Logging.ActionFilter
                         continue;
                     }
 
-                    var serialized = JsonConvert.SerializeObject(arg.Value, Formatting.None);
+                    var serialized = JsonSerializer.Serialize(arg.Value);
                     
                     // Apply sensitive field masking
                     var masked = serialized.MaskSensitiveFields(_config.HttpLogging.SensitiveFields);
@@ -211,7 +211,7 @@ namespace Framework.Core.Logging.ActionFilter
                     // Try to deserialize back to object for cleaner JSON structure
                     try
                     {
-                        sanitizedArguments[arg.Key] = JsonConvert.DeserializeObject(masked) ?? masked;
+                        sanitizedArguments[arg.Key] = JsonSerializer.Deserialize<object>(masked) ?? masked;
                     }
                     catch
                     {
@@ -219,7 +219,7 @@ namespace Framework.Core.Logging.ActionFilter
                     }
                 }
 
-                var result = JsonConvert.SerializeObject(sanitizedArguments, Formatting.None);
+                var result = JsonSerializer.Serialize(sanitizedArguments);
                 return result.Length > _config.HttpLogging.MaxBodySize 
                     ? result.Substring(0, _config.HttpLogging.MaxBodySize) + " [CROPPED]"
                     : result;

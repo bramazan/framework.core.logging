@@ -1,8 +1,7 @@
 ﻿using Framework.Core.Logging.Helper;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
-using Newtonsoft.Json;
-using Formatting = Newtonsoft.Json.Formatting;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 namespace Framework.Core.Logging.Logging.AppLogger
@@ -84,7 +83,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
                 appLog.Properties["Environment"] = PlatformAppLoggerConfiguration.EnvironmentName;
                 appLog.Properties["LoggerApplicationName"] = _currentConfig.LoggerApplicationName;
 
-                var json = JsonConvert.SerializeObject(appLog, Formatting.None);
+                var json = JsonSerializer.Serialize(appLog);
 
                 _logger.LogInformation(json);
             }
@@ -109,7 +108,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
                     methodBase?.DeclaringType?.Assembly.GetName().Name,
                     methodBase?.Name,
                     _correlationId,
-                    JsonConvert.SerializeObject(logEventInfo, Formatting.None).ClearSensitiveValues().Crop(180 * 1024),
+                    JsonSerializer.Serialize(logEventInfo).ClearSensitiveValues().Crop(180 * 1024),
                     "{}"); // Headers will be logged by HttpLoggingMiddleware
 
                 return _correlationId;
@@ -136,7 +135,7 @@ namespace Framework.Core.Logging.Logging.AppLogger
                     _correlationId,
                     methodExecutionDuration,
                     messageCode,
-                    JsonConvert.SerializeObject(logEventInfo, Formatting.None).ClearSensitiveValues().Crop(180 * 1024),
+                    JsonSerializer.Serialize(logEventInfo).ClearSensitiveValues().Crop(180 * 1024),
                     "{}"); // Headers will be logged by HttpLoggingMiddleware
 
                 return _correlationId;

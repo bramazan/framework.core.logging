@@ -2,7 +2,7 @@ using Framework.Core.Logging.Helper;
 using Framework.Core.Logging.Logging.AppLogger;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Threading.Channels;
 
 namespace Framework.Core.Logging.Logging.AsyncLogging

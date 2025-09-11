@@ -89,7 +89,7 @@ namespace Framework.Core.Logging.Instrumentation
                     LogType.Database.ToString(),
                     operation,
                     operationId,
-                    Newtonsoft.Json.JsonConvert.SerializeObject(logData, Newtonsoft.Json.Formatting.None)
+                    System.Text.Json.JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)
@@ -133,7 +133,7 @@ namespace Framework.Core.Logging.Instrumentation
                     operation,
                     operationId,
                     elapsedMs,
-                    Newtonsoft.Json.JsonConvert.SerializeObject(logData, Newtonsoft.Json.Formatting.None)
+                    System.Text.Json.JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)
@@ -171,7 +171,7 @@ namespace Framework.Core.Logging.Instrumentation
                     operation,
                     operationId,
                     exception.Message,
-                    Newtonsoft.Json.JsonConvert.SerializeObject(logData, Newtonsoft.Json.Formatting.None)
+                    System.Text.Json.JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)

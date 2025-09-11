@@ -2,7 +2,7 @@ using Framework.Core.Logging.Helper;
 using Framework.Core.Logging.Logging.AppLogger;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -146,7 +146,7 @@ namespace Framework.Core.Logging.Middleware
                     request.Method,
                     request.Path.Value,
                     correlationId,
-                    JsonConvert.SerializeObject(logData, Formatting.None)
+                    JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)
@@ -179,7 +179,7 @@ namespace Framework.Core.Logging.Middleware
                     context.Request.Path.Value,
                     correlationId,
                     elapsedMilliseconds,
-                    JsonConvert.SerializeObject(logData, Formatting.None)
+                    JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)
@@ -225,7 +225,7 @@ namespace Framework.Core.Logging.Middleware
                     exception.GetType().Name,
                     path.Value,
                     correlationId,
-                    JsonConvert.SerializeObject(logData, Formatting.None)
+                    JsonSerializer.Serialize(logData)
                 );
             }
             catch (Exception ex)

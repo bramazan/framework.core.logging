@@ -2,7 +2,7 @@ using Framework.Core.Logging.Helper;
 using Framework.Core.Logging.Logging.AppLogger;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 using System.Net;
 
 namespace Framework.Core.Logging.Middleware
@@ -101,7 +101,7 @@ namespace Framework.Core.Logging.Middleware
                 Timestamp = DateTimeOffset.UtcNow
             };
 
-            var logData = JsonConvert.SerializeObject(exceptionData, Formatting.None);
+            var logData = JsonSerializer.Serialize(exceptionData);
 
             _appLogger.Log(
                 "{LogType} {ExceptionType} {RequestPath} {CorrelationId} {LogData}",
@@ -131,7 +131,7 @@ namespace Framework.Core.Logging.Middleware
                 Details = _options.IncludeStackTrace ? exceptionInfo.Details : null
             };
 
-            var json = JsonConvert.SerializeObject(response, Formatting.Indented);
+            var json = JsonSerializer.Serialize(response, new JsonSerializerOptions { WriteIndented = true });
             await context.Response.WriteAsync(json);
         }
 
