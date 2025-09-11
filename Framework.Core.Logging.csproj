@@ -7,7 +7,7 @@
   </PropertyGroup>
   <PropertyGroup>
   <PackageId>Framework.Core.Logging</PackageId>
-  <Version>2.0.0</Version>
+  <Version>2.0.1</Version>
   <Authors>Burak Ramazan</Authors>
   <Company>ÖdeAL</Company>
   <Description>ÖdeAL Advanced Logging Package with Auto-Instrumentation, Global Exception Handling, and Async Logging</Description>
